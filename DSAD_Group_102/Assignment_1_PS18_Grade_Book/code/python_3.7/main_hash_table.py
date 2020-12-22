@@ -11,6 +11,14 @@ def fileReader(path):
 def initializeHash(size, obj):
     return  HashTable(size)
 
+def insertStudentRec(StudentHashRecords, studentId, CGPA):
+    StudentHashRecords.add(student_info(studentId, studentId))
+
+def destroyHash(StudentHashRecords):
+    StudentHashRecords.table = []
+    StudentHashRecords.size = 0
+    StudentHashRecords.fill_counter = 0
+
 class HashTable:
 
     def __init__(self, size):
@@ -73,12 +81,15 @@ def main():
     file_records = fileReader('../../data/200_List.txt')
     for input in file_records:
         student = input.split("\\")
-        student_hash_table.add(student_info(student[0], student[1]))
+        insertStudentRec(student_hash_table, student[0], student[1])
+
 
     for i in student_hash_table.table:
         if(i != None):
             print(i.student_id, i.cgpa)
-
+    print(len(student_hash_table.table))
+    destroyHash(student_hash_table)
+    print(len(student_hash_table.table), student_hash_table.size, student_hash_table.fill_counter)
 if __name__ == "__main__":
     main()
 
