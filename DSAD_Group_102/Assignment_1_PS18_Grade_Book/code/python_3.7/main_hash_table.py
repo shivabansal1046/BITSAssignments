@@ -12,7 +12,7 @@ def initializeHash(size, obj):
     return  HashTable(size)
 
 def insertStudentRec(StudentHashRecords, studentId, CGPA):
-    StudentHashRecords.add(student_info(studentId, studentId))
+    StudentHashRecords.add(student_info(studentId, CGPA))
 
 def destroyHash(StudentHashRecords):
     StudentHashRecords.table = []
@@ -77,12 +77,14 @@ class HashTable:
 
 def main():
 
+    print("initializing hash table")
     student_hash_table = initializeHash(100, student_info)
+    print("Reading content from input file")
     file_records = fileReader('../../data/200_List.txt')
+    print("building hash table")
     for input in file_records:
         student = input.split("\\")
-        insertStudentRec(student_hash_table, student[0], student[1])
-
+        insertStudentRec(student_hash_table, student[0].strip(), student[1].strip())
 
     for i in student_hash_table.table:
         if(i != None):
