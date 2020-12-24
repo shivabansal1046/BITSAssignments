@@ -71,6 +71,7 @@ class HashTable:
         i = 0
         for entry in self.table:
             table[i] = entry
+            i = i + 1
 
         self.table = table
         self.size = int(self.size * size_fraction)
@@ -80,7 +81,7 @@ def main():
     print("initializing hash table")
     student_hash_table = initializeHash(100, student_info)
     print("Reading content from input file")
-    file_records = fileReader('../../data/200_List.txt')
+    file_records = fileReader('../../data/inputPS18.txt')
     print("building hash table")
     for input in file_records:
         student = input.split("\\")
