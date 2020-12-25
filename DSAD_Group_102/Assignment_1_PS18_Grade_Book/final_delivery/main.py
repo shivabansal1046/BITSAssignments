@@ -1,5 +1,4 @@
 dep_list = []
-output_file = '../../data/ashish_out_out_data.txt'
 current_year = 2020
 class student_info:
     def __init__(self, student_id, cgpa):
@@ -107,7 +106,6 @@ def hallOfFame(StudentHashRecords):
     topper = []
     for record in StudentHashRecords:
         if(record != None and (int(record.student_id[:4])) < (current_year - 5)):
-            print(record.student_id)
             year = int(record.student_id[3:4])
             dep = int(dep_list.index(record.student_id[4:7]))
             dep_index = year*10 + dep
@@ -181,7 +179,7 @@ def main():
     print("initializing hash table")
     student_hash_table = initializeHash(100, student_info)
     print("Reading content from input file")
-    file_records = fileReader('../../data/inputPS18.txt')
+    file_records = fileReader('inputPS18.txt')
     print("building hash table")
     for input in file_records:
         student = input.split("\\")
@@ -189,7 +187,7 @@ def main():
 
     print("reading input params file")
 
-    file_records = fileReader("../../data/promptsPS18.txt")
+    file_records = fileReader("promptsPS18.txt")
     input_params = []
     for input in file_records:
         if (len(input) > 0):
@@ -219,7 +217,7 @@ def main():
 
     print("writer funtion to write output as per the requirement")
 
-    outputWriter("../../data/outputPS18.txt",[hall_of_dame, [cgpa_param[0], cgpa_param[1]], new_course_list , dep_avg])
+    outputWriter("outputPS18.txt", [hall_of_dame, [cgpa_param[0], cgpa_param[1]], new_course_list , dep_avg])
     
     print("destroying hash table as part of clean up")
     destroyHash(student_hash_table)
