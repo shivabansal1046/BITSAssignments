@@ -9,9 +9,30 @@ def fileReader(path):
     inputFile = open(path, 'r')
     return inputFile
 
-def outputWriter(output_file):
-    with open(output_file, 'a+') as of:
-        of.write("need to write as per output standard once all the functions provided")
+def outputWriter(output_file, content):
+    out = open(output_file, 'w')
+    print("writing hall of fame")
+    out.write("---------- hall of fame ----------\n\n")
+    out.write("Total eligible students: {students}".format(students = len(content[0])))
+    out.write("\n\n")
+    out.write("Qualified students:\n\n")
+    for record in content[0]:
+        out.write(record[0] +" / " + record[1] + "\n")
+    out.write("------------------------------\n\n")
+    out.write("\n---------- new course candidates ----------\n\n")
+    out.write("Input: {cgpa_from} to {cgpa_to}".format(cgpa_from = content[1][0], cgpa_to = content[1][1]))
+    out.write("\n\n")
+    out.write("Total eligible students: {students}".format(students = len(content[2])))
+    out.write("\n\n")
+    out.write("Qualified students:\n\n")
+    for record in content[2]:
+        out.write(record[0] +" / " + record[1] + "\n")
+    out.write("------------------------------\n\n")
+    out.write("---------- department CGPA ----------\n\n")
+    for record in content[3]:
+        out.write(record[0] +": max: " + str(record[1]) + ", avg: " + str(record[2]) + "\n")
+
+    out.close()
 
 def initializeHash(size, obj):
     return  HashTable(size)
@@ -81,6 +102,34 @@ class HashTable:
         self.table = table
         self.size = int(self.size * size_fraction)
 
+def hallOfFame(StudentHashRecords):
+    max_cgpa = []
+    topper = []
+    for record in StudentHashRecords:
+        if(record != None and (int(record.student_id[:4]) + 4) >= (current_year - 5)):
+            year_dep = record.student_id[0:7]
+            found_flag = False
+            cnt = 0
+            for rec in max_cgpa:
+                if (rec[0] == year_dep):
+                    found_flag = True
+                    if (rec[1] < record.cgpa):
+                        max_cgpa[cnt][1] = record.cgpa
+            if(found_flag == False):
+                max_cgpa.append([year_dep, record.cgpa])
+
+    for record in StudentHashRecords:
+        if(record != None and (int(record.student_id[:4]) + 4) >= (current_year - 5)):
+            year_dep = record.student_id[0:7]
+            for rec in max_cgpa:
+                if (year_dep == rec[0]):
+                    if(record.cgpa == rec[1]):
+                        topper.append([record.student_id, record.cgpa])
+                    break
+
+    return topper
+
+
 ### hash table query function #########
 
 # def newCourseList(StudentHashRecords, CGPAFrom, CPGATo): This function prints the list of all students who have
@@ -88,87 +137,47 @@ class HashTable:
 # considered. Calculate the applicable year range accordingly). The input CGPAs can be read from the file
 # promptsPS18.txt. The input can be identified with the tag mentioned below courseOffer: 3.5 : 4.0 Print the
 # eligible students for a new course whose CGPA is between the range
+
 def newCourseList(student_hash_table, cgpa_from, cgpa_to):
     qualified_students = []
     # get the qualified students based on their CGPA
-    for student_count in range(len(student_hash_table.table)):
-        if not student_hash_table.table[student_count] is None:
+    for rec in student_hash_table.table:
+        if not rec is None:
             if (
-
-                    (int(student_hash_table.table[student_count].student_id[:4]) + 4) >= (current_year - 5) and
-                    cgpa_from <= float(student_hash_table.table[student_count].cgpa) <= cgpa_to
+                    (int(rec.student_id[:4]) + 4) >= (current_year - 5) and
+                    cgpa_from <= float(rec.cgpa) <= cgpa_to
             ):
-                qualified_students.append(student_hash_table.table[student_count])
-
-    # print the qualified students
-    with open(output_file, 'a+') as of:
-        of.write('---------- new course candidates ----------\n')
-        of.write('Input: %s to %s\n' % (str(cgpa_from), str(cgpa_to)))
-        of.write('Total eligible students: %d\n' % len(qualified_students))
-        of.write('Qualified students:\n')
-        for student_qualified_count in range(len(qualified_students)):
-            if not qualified_students[student_qualified_count] is None:
-                qual_student_id = qualified_students[student_qualified_count].student_id
-                qual_cgpa = qualified_students[student_qualified_count].cgpa
-                of.write('%s / %s\n' % (qual_student_id, str(qual_cgpa)))
-
+                qualified_students.append((rec.student_id, rec.cgpa))
+    return qualified_students
 
 # def depAvg(StudentHashRecords): This function prints the list of all departments followed by the maximum CGPA and
 # average CGPA of all students in that department. The output should be captured in outputPS18.txt following format
 # CSE: max: 3.5, avg: 3.4
 def depAvg(student_hash_table):
-    cse_count, mec_count, ece_count, arc_count = 0, 0, 0, 0
-    cse_max, mec_max, ece_max, arc_max = 0, 0, 0, 0
-    cse_sum_dep, mec_sum_dep, ece_sum_dep, arc_sum_dep = 0, 0, 0, 0
-    cse_avg, mec_avg, ece_avg, arc_avg = 0, 0, 0, 0
+    final_dep_return_array = [None] * len(dep_list)
+    dep_max_arr = [float(0)] * len(dep_list)
+    dep_avg_arr = [float(0)] * len(dep_list)
+    dep_each_count = [float(0)] * len(dep_list)
 
     # loop over the students to count and get the cgpas of students
     # based on their departments
-    for student_count in range(len(student_hash_table.table)):
-        if not student_hash_table.table[student_count] is None:
-            department = student_hash_table.table[student_count].student_id[4:7]
-            cgpa = float(student_hash_table.table[student_count].cgpa)
-            if department == 'CSE':
-                cse_count += 1
-                cse_sum_dep += cgpa
-            if cgpa > cse_max:
-                cse_max = cgpa
-            elif department == 'MEC':
-                mec_count += 1
-                mec_sum_dep += cgpa
-            if cgpa > mec_max:
-                mec_max = cgpa
-            elif department == 'ECE':
-                ece_count += 1
-                ece_sum_dep += cgpa
-            if cgpa > ece_max:
-                ece_max = cgpa
-            elif department == 'ARC':
-                arc_count += 1
-                arc_sum_dep += cgpa
-            if cgpa > arc_max:
-                arc_max = cgpa
+    for student_record in student_hash_table.table:
+        if not student_record is None:
+            # Get the department and cgpa from the hashtable collection
+            department = student_record.student_id[4:7]
 
-    # average_values
-    cse_avg = cse_sum_dep / cse_count if cse_count != 0 else 0
-    mec_avg = mec_sum_dep / mec_count if mec_count != 0 else 0
-    ece_avg = ece_sum_dep / ece_count if ece_count != 0 else 0
-    arc_avg = arc_sum_dep / arc_count if arc_count != 0 else 0
-    # CSE: max: 3.5, avg: 3.4
+            dep_avg_arr[dep_list.index(department)] += float(student_record.cgpa)
+            dep_each_count[dep_list.index(department)] += 1
 
-    # print the max and averages for each department
-    with open(output_file, 'a+') as of:
-        of.write('---------- department CGPA ----------\n')
-        of.write('CSE: max: %s, avg: %s\n' %
-                 (str(cse_max), str(round(cse_avg, 2))))
-        of.write('MEC: max: %s, avg: %s\n' %
-                 (str(mec_max), str(round(mec_avg, 2))))
-        of.write('ECE: max: %s, avg: %s\n' %
-                 (str(ece_max), str(round(ece_avg, 2))))
-        of.write('ARC: max: %s, avg: %s\n' %
-                 (str(arc_max), str(round(arc_avg, 2))))
-        of.write('-------------------------------------\n')
+            # cgpa for the department
+            if dep_max_arr[dep_list.index(department)] < float(student_record.cgpa):
+                cgpa = float(student_record.cgpa)
+                dep_max_arr[dep_list.index(department)] = float(student_record.cgpa)
 
+    for count_num in range(len(dep_max_arr)):
+        final_dep_return_array[count_num] = dep_list[count_num], dep_max_arr[count_num], round(
+            dep_avg_arr[count_num] / dep_each_count[count_num], 2)
+    return final_dep_return_array
 
 def main():
 
@@ -202,18 +211,18 @@ def main():
 
     print("need to add hall of fame function call")
 
-    #hallOfFame(student_hash_table.table)
+    hall_of_dame = hallOfFame(student_hash_table.table)
 
     print("calling new course list candidates function")
-    newCourseList(student_hash_table, float(cgpa_param[0]), float(cgpa_param[1]))
+    new_course_list = newCourseList(student_hash_table, float(cgpa_param[0]), float(cgpa_param[1]))
 
     print("calling new department cgpa function")
 
-    depAvg(student_hash_table)
+    dep_avg = depAvg(student_hash_table)
 
     print("writer funtion to write output as per the requirement")
 
-    outputWriter("../../outputPS18.txt")
+    outputWriter("../../data/outputPS18.txt",[hall_of_dame, [cgpa_param[0], cgpa_param[1]], new_course_list , dep_avg])
     
     print("destroying hash table as part of clean up")
     destroyHash(student_hash_table)
