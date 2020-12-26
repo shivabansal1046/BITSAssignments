@@ -6,8 +6,11 @@ class student_info:
         self.student_id = student_id
         self.cgpa = cgpa
 def fileReader(path):
-    inputFile = open(path, 'r')
-    return inputFile
+    try:
+        inputFile = open(path, 'r')
+        return inputFile
+    except(FileNotFoundError, IOError):
+        print("file not found")
 
 def outputWriter(output_file, content):
     out = open(output_file, 'w')

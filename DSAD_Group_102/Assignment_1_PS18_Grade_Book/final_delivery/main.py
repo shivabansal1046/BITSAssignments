@@ -5,8 +5,12 @@ class student_info:
         self.student_id = student_id
         self.cgpa = cgpa
 def fileReader(path):
-    inputFile = open(path, 'r')
-    return inputFile
+    try:
+        inputFile = open(path, 'r')
+        return inputFile
+    except(FileNotFoundError, IOError):
+        print("file not found, exiting the program !!!")
+        exit(1)
 
 def outputWriter(output_file, content):
     out = open(output_file, 'w')
@@ -104,6 +108,7 @@ class HashTable:
 def hallOfFame(StudentHashRecords):
     max_cgpa = [None]*100
     topper = []
+
     for record in StudentHashRecords:
         if(record != None and (int(record.student_id[:4])) < (current_year - 5)):
             year = int(record.student_id[3:4])
