@@ -49,10 +49,11 @@ def calculateCompletionTime(input):
         stage_time += i[1]
         temp_idle_time = stage_time - photoshoot_time
         if temp_idle_time > 0:
-            photoshoot_time += i[2] + idle_time
+            photoshoot_time += i[2] + temp_idle_time
             idle_time += temp_idle_time
         else:
             photoshoot_time += i[2]
+        #print("product name:{0}, idle time :{1} , photoshootime :{2} and stagetime:{3}".format(i[0], idle_time, photoshoot_time, stage_time))
 
     return photoshoot_time, idle_time
 
