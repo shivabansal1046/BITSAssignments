@@ -14,37 +14,17 @@ def fileReader(path):
 
 
 # This function is use for to print the job sequence
-def printJobSequence(arr):
-    summed_array = []
-    sum = 0
-    n = len(arr)
-
-    #1
-    print("Product Sequence:")
-    print(','.join([str(arr[x][0]) for x in range(n)]))
-
-    #2
-    print("Stage Sequence Timing:")
-    print(','.join([str(arr[x][1]) for x in range(n)]))
-
-    #3
-    print("Schedule completion time for the stage process:")
-    for i in range(n):
-        summed_array
-        sum += arr[i][1]
-        summed_array.append(sum)
-    print(','.join([str(summed_array[x]) for x in range(n)]))
+def outputWriter(output_file, arr, elapse_time, idle_time):
+    out = open(output_file, 'w')
+    out.write("Product Sequence: " + ', '.join([str(x[0]) for x in arr]))
+    out.write("\n")
+    out.write("Total time to complete photoshoot: {0} minutes\n".format(elapse_time))
+    out.write("Idle time for Xavier: {0} minutes".format(idle_time))
 
 ''' calculating photographer idle time and total elapse time'''
 
 def calculateCompletionTime(input):
     idle_time, photoshoot_time, stage_time = 0, 0, 0
-    '''
-    Products: A / B / C / D / E / F
-    Staging: 20 / 30 / 45 / 60 / 20 / 10
-    Photo: 30 / 30 / 15 / 20 / 40 / 60
-    '''
-
     for i in input:
         stage_time += i[1]
         temp_idle_time = stage_time - photoshoot_time
@@ -53,14 +33,11 @@ def calculateCompletionTime(input):
             idle_time += temp_idle_time
         else:
             photoshoot_time += i[2]
-        #print("product name:{0}, idle time :{1} , photoshootime :{2} and stagetime:{3}".format(i[0], idle_time, photoshoot_time, stage_time))
-
     return photoshoot_time, idle_time
 
 
-
 # Added temporary inbuilt function to support sorting requiremetn
-
+''' Need to remove this function once we have custom built function with merge sort'''
 def sortInbuilt(input, key, reverseOrder=False):
     def sort1(input):
         return input[1]
@@ -82,8 +59,7 @@ def sortJobScheduling(arr):
             if arr[j][1] > arr[j + 1][1]:
                 arr[j], arr[j + 1] = arr[j + 1], arr[j]
 
-    printJobSequence(arr)
-    CalculatePrintIdleTime(arr, photo)
+    return arr
 
 ## main function to run the code
 def main():
@@ -105,23 +81,17 @@ def main():
         final_input.append((products[i].strip(), int(staging[i].strip()), int(photo[i].strip())))
 
 
-    for i in final_input:
-        print(i)
+
+    ''' As per Greedy approach, sorting input data based on staging time
+        so that xavier can start photoshoot as soon as possible 
+        and idle time can be reduced which will eventually 
+        reduce overall photoshoot time
+    '''
+    #final_input = sortInbuilt(final_input, 1, reverseOrder = False)
+    final_input = sortJobScheduling(final_input)
 
     photoshoot_time, idle_time = calculateCompletionTime(final_input)
-    print("elapse and idle time on raw input:")
-    print(photoshoot_time, idle_time)
-
-    # sort input data based on staging time
-    final_input = sortInbuilt(final_input, 1, reverseOrder = False)
-
-    print("print Sorted input")
-    for i in final_input:
-        print(i)
-
-    print("elapse and idle time on sorted stage input:")
-    photoshoot_time, idle_time = calculateCompletionTime(final_input)
-    print(photoshoot_time, idle_time)
+    outputWriter("../../data/outputPS7.txt", final_input, photoshoot_time, idle_time)
 
 if __name__ == "__main__":
     main()
