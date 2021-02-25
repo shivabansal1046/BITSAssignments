@@ -47,6 +47,41 @@ def calculateCompletionTime(input_data):
 # Added temporary inbuilt function to support sorting requiremetn
 """ Need to remove this function once we have custom built function with merge sort """
 
+''' final sorting algorith'''
+def merge_sort(arr, sort_key= 1):
+    final_arr = []
+    arr1 = []
+    arr2 = []
+
+    if len(arr) < 2:
+        final_arr = arr
+    else:
+        arr1 = merge_sort(arr[0: round(len(arr)/2)])
+        arr2 = merge_sort(arr[round(len(arr)/2): ])
+        arr1_inc = 0
+        arr2_inc = 0
+
+        while 1 == 1:
+            if arr1[arr1_inc][sort_key] < arr2[arr2_inc][sort_key]:
+                final_arr.append(arr1[arr1_inc])
+                if(arr1_inc < len(arr1)-1):
+                    arr1_inc += 1
+                else:
+                    for i in arr2[arr2_inc: ]:
+                        final_arr.append(i)
+                    break
+            else:
+                final_arr.append(arr2[arr2_inc])
+                if(arr2_inc < len(arr2)-1):
+                    arr2_inc += 1
+                else:
+
+                    for i in arr1[arr1_inc: ]:
+                        final_arr.append(i)
+                    break
+
+
+    return final_arr
 
 # """ sorting input data based on the input column """
 def sortJobScheduling(arr, c_n):
@@ -94,7 +129,7 @@ def main():
     """
 
     # """ Short teh input data based on the staging column which is on the middle """
-    final_input = sortJobScheduling(final_input, 1)
+    final_input = merge_sort(final_input, 1)
 
     # """ Invoke function to calculate photoshoot_time and idle_time """
     photoshoot_time, idle_time = calculateCompletionTime(final_input)
