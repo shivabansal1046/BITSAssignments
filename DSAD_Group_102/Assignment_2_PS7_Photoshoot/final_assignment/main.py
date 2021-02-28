@@ -1,6 +1,6 @@
 """ Please configure the Input and Output file path of the file here """
 output_file_path = "outputPS7.txt"
-input_file_path = "input.txt"
+input_file_path = "inputPS7.txt"
 
 
 # """ Function to read the file and throw the exception based on the result """
@@ -44,11 +44,8 @@ def calculateCompletionTime(input_data):
     return photoshoot_time, idle_time
 
 
-# Added temporary inbuilt function to support sorting requiremetn
-""" Need to remove this function once we have custom built function with merge sort """
-
-''' final sorting algorith'''
-def merge_sort(arr, sort_key= 1):
+# """ sorting input data based on the input column. it has tie break in case product has same staging time, it will sort the products in ascending photoshoot time."""
+def sortJobScheduling(arr, sort_key=1):
     final_arr = []
     arr1 = []
     arr2 = []
@@ -56,8 +53,8 @@ def merge_sort(arr, sort_key= 1):
     if len(arr) < 2:
         final_arr = arr
     else:
-        arr1 = merge_sort(arr[0: round(len(arr)/2)])
-        arr2 = merge_sort(arr[round(len(arr)/2): ])
+        arr1 = sortJobScheduling(arr[0: round(len(arr)/2)])
+        arr2 = sortJobScheduling(arr[round(len(arr)/2): ])
         arr1_inc = 0
         arr2_inc = 0
 
@@ -102,17 +99,6 @@ def merge_sort(arr, sort_key= 1):
 
     return final_arr
 
-# """ sorting input data based on the input column """
-def sortJobScheduling(arr, c_n):
-    # length of array
-    n = len(arr)
-    for i in range(n):
-        for j in range(n - 1 - i):
-            if arr[j][c_n] > arr[j + 1][c_n]:
-                arr[j], arr[j + 1] = arr[j + 1], arr[j]
-
-    return arr
-
 
 # main function to run the code
 def main():
@@ -148,7 +134,7 @@ def main():
     """
 
     # """ Short teh input data based on the staging column which is on the middle """
-    final_input = merge_sort(final_input, 1)
+    final_input = sortJobScheduling(final_input, 1)
 
     # """ Invoke function to calculate photoshoot_time and idle_time """
     photoshoot_time, idle_time = calculateCompletionTime(final_input)
