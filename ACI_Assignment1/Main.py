@@ -1,13 +1,15 @@
+root_paths = {}
 class BlockState:
-    def __init__(self,h_value, actions, position):
+    def __init__(self, h_value, actions, position):
         self.obstacle = None
         self.cost = 0
         self.g_value = 0
         self.h_value = h_value
         self.allowed = True
+        self.root_path = None
         self.actions = actions  ## seems like not needed kept for now
         self.position = position
-        self.root_path = []
+        self.pushed = False
 
 
 class Queue:
@@ -53,6 +55,52 @@ class Queue:
             self.top = len(self.explore_list)
         return node
 
+
+def board_test(size: [], goal_state, obstacles):
+
+    board_env = [[BlockState(0,0,(0,0)) for j in range(size[1])] for i in range(size[0])]
+    row_val = 0
+    col_val = 0
+    for row in board_env:
+        for col in row:
+            h_value = abs((goal_state[0]- row_val)) + abs((goal_state[1]- col_val))
+            ## actions can be calulated and seems like not needed kept for now
+            actions = 4
+            if (row_val,col_val) in ((0,0),(0,7),(7,0),(7,7)): #corner cells
+                actions = 2
+            elif row_val in(0,7) or col_val in (0,7): #edge cells
+                actions = 3
+            else:
+                actions = 4
+            board_env[row_val][col_val] = BlockState(h_value, actions, (row_val,  col_val))
+            col_val += 1
+        col_val = 0
+        row_val += 1
+    for obstactle in obstactles:
+        for pos in obstactle[1]:
+            board_env[pos[0]][pos[1]].cost = obstactle[3]
+            board_env[pos[0]][pos[1]].allowed = obstactle[2]
+            board_env[pos[0]][pos[1]].obstacle = obstactle[0]
+
+            if pos[1] -1 >= 0 and board_env[pos[0]][pos[1] - 1].allowed:
+                board_env[pos[0]][pos[1] - 1].cost += obstactle[3]
+            if pos[1] + 1 < 8 and board_env[pos[0]][pos[1] + 1].allowed:
+                board_env[pos[0]][pos[1] + 1].cost += obstactle[3]
+            if pos[0] - 1 >= 0 and board_env[pos[0] - 1][pos[1]].allowed:
+                board_env[pos[0] - 1][pos[1]].cost += obstactle[3]
+            if pos[0] + 1 < 8 and board_env[pos[0] + 1][pos[1]].allowed:
+                board_env[pos[0] + 1][pos[1]].cost += obstactle[3]
+            #diagonal cells
+            if pos[0] + 1 < 8 and pos[1] + 1 < 8 and board_env[pos[0] + 1][pos[1] + 1].allowed:
+                board_env[pos[0] + 1][pos[1] + 1].cost += obstactle[3]
+            if pos[0] + 1 < 8 and pos[1] - 1 >= 0 and board_env[pos[0] + 1][pos[1] - 1].allowed:
+                board_env[pos[0] + 1][pos[1] - 1].cost += obstactle[3]
+            if pos[0] - 1 >= 0 and pos[1] - 1 >= 0 and board_env[pos[0] - 1][pos[1] - 1].allowed:
+                board_env[pos[0] - 1][pos[1] - 1].cost += obstactle[3]
+            if pos[0] - 1 >= 0 and pos[1] + 1 < 8 and board_env[pos[0] - 1][pos[1] + 1].allowed:
+                board_env[pos[0] - 1][pos[1] + 1].cost += obstactle[3]
+
+    return board_env
 
 def board(size: [], goal_state, obstacles):
 
@@ -121,13 +169,13 @@ def find_children(game_board, position):
 
     childerns = []
     if position[0] + 1 < 8 and game_board[position[0]+1][position[1]].allowed is True:
-        childerns.append(game_board[position[0] + 1][position[1]])
+        childerns.append((position[0] + 1, position[1]))
     if position[0] - 1 >= 8 and game_board[position[0]+1][position[1]].allowed is True:
-        childerns.append(game_board[position[0] - 1][position[1]])
+        childerns.append((position[0] - 1, position[1]))
     if position[1] - 1 >= 0 and game_board[position[0]][position[1] - 1].allowed is True:
-        childerns.append(game_board[position[0]][position[1] - 1])
+        childerns.append((position[0], position[1] - 1))
     if position[1] + 1 < 8 and game_board[position[0]][position[1] + 1].allowed is True:
-        childerns.append(game_board[position[0]][position[1] + 1])
+        childerns.append((position[0], position[1] + 1))
 
     return childerns
 
@@ -135,57 +183,67 @@ def find_children(game_board, position):
 
 def a_star(game_board, inital_position, goal_state):
 
-    path = []
-    returned_path = []
+    path = ""
+    returned_path = ""
     explore_list = Queue(list_type="priority_queue")
     explored_list = []
+
+
+
     if inital_position == goal_state:
-        path.append(inital_position, game_board[inital_position[0]][inital_position[1]].cost)
+        path = path + str(inital_position) + "|" + str(game_board[inital_position[0]][inital_position[1]].cost)
         return path
 
     explored_list.append((inital_position, path))
     children = find_children(game_board, inital_position)
     for child in children:
-        if child.position != inital_position:
-            child.g_value = game_board[inital_position[0]][inital_position[1]].cost + child.cost
-            child.root_path = [(inital_position, 0)]
-            explore_list.push((child, (inital_position, 0)))
-    path = [(inital_position, 0)]
+        if child != inital_position:
+            game_board[child[0]][child[1]].g_value = game_board[inital_position[0]][inital_position[1]].cost + game_board[child[0]][child[1]].cost
+            game_board[child[0]][child[1]].root_path = [(inital_position, 0)]
+            explore_list.push((game_board[child[0]][child[1]], (inital_position, 0)))
+    path = path + str(inital_position) + "|" + str(0)
     node = (game_board[inital_position[0]][inital_position[1]],path)
 
 
     while explore_list.top != explore_list.bottom:
-        prev_node = node
-        node = explore_list.pop()
 
+        node = explore_list.pop()
 
         path_reset = True
         for child in children:
 
-            if node[0].position == child.position:
+            if node[0].position == child:
                 path_reset = False
 
         if path_reset:
             path = node[0].root_path
+
         try:
             tmp_list = [val[0] for val in explored_list]
             tmp_list.index(node[0].position)
+            print("already explored")
+            print(node[0].position)
 
         except:
             if node[0].position == goal_state:
-                path.append((node[0].position, node[0].cost))
+                path = path + " -> " + str(node[0].position) + "|" + str(node[0].cost)
                 returned_path = path
                 break
             explored_list.append((node[0].position, path))
-            path.append((node[0].position, node[0].cost))
+
+            path = path + " -> " + str(node[0].position) + "|" + str(node[0].cost)
             children = find_children(game_board, node[0].position)
 
             for child in children:
-                child.g_value = child.cost + node[0].g_value
+                game_board[child[0]][child[1]].g_value = game_board[child[0]][child[1]].cost + node[0].g_value
 
-                if child.position != inital_position:
-                    child.root_path = path
-                    explore_list.push((child, path))
+                if child != inital_position and game_board[child[0]][child[1]].pushed == False:
+                    game_board[child[0]][child[1]].root_path = path
+                    root_paths[child] = path
+                    explore_list.push((game_board[child[0]][child[1]], path))
+                    game_board[child[0]][child[1]].pushed = True
+
+
 
     return returned_path
 
@@ -195,12 +253,12 @@ queen_position = (7,6)
 
 obstactles = [("wild animals", [(1,1), (1,2), (4,6), (4,7)], False, 5),
               ("fire", [(2,3), (2,4), (4,1)], False, 5),
-              ("forrest", [(6,1), (6,2), (6,5), (7,5)], False, -5),
-              ("water", [(0,4), (0,5), (3,0), (3,1)], False, -5),
-              ("mountains", [(1,5), (1,6)], False, 3),
+              ("forrest", [(0,4), (0,5), (3,0), (3,1)], False, -5),
+              ("water", [(6,1), (6,2), (6,5), (7,5)], False, -5),
+              ("mountains", [(1,5), (1,6),(3,3),(3,4)], False, 3),
               ]
 
-board_env = board([8,8], queen_position, obstactles)
+board_env = board_test([8,8], queen_position, obstactles)
 
 board_env[knight_position[0]][knight_position[1]].obstacle='K'
 board_env[queen_position[0]][queen_position[1]].obstacle='Q'
@@ -220,10 +278,27 @@ for i in board_env:
 
 path = a_star(board_env, knight_position, queen_position)
 print(path)
+
 total_cost = 0
-for i in path:
-    total_cost += i[1]
+for i in path.split(" -> "):
+    total_cost += int(i.split("|")[1])
+
 print(total_cost)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
