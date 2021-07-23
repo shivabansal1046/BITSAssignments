@@ -54,7 +54,7 @@ class Queue:
         return node
 
 
-def board(size: [], goal_state):
+def board(size: [], goal_state, obstacles):
 
     board_env = [[BlockState(0,0,(0,0)) for j in range(size[1])] for i in range(size[0])]
     row_val = 0
@@ -74,63 +74,11 @@ def board(size: [], goal_state):
             col_val += 1
         col_val = 0
         row_val += 1
-
-    #wild animals
-    board_env[1][1].cost = 5
-    board_env[1][1].allowed = False
-    board_env[1][2].cost = 5
-    board_env[1][2].allowed = False
-    board_env[4][6].cost = 5
-    board_env[4][6].allowed = False
-    board_env[4][7].cost = 5
-    board_env[4][7].allowed = False
-    board_env[1][1].obstacle = 'A'
-    board_env[1][2].obstacle = 'A'
-    board_env[4][6].obstacle = 'A'
-    board_env[4][7].obstacle = 'A'
-    #fire
-    board_env[2][3].cost = 5
-    board_env[2][3].allowed = False
-    board_env[2][4].cost = 5
-    board_env[2][4].allowed = False
-    board_env[4][1].cost = 5
-    board_env[4][1].allowed = False
-    board_env[2][3].obstacle = 'F'
-    board_env[2][4].obstacle = 'F'
-    board_env[4][1].obstacle = 'F'
-    #forrest
-    board_env[6][1].cost = -5
-    board_env[6][1].allowed = False
-    board_env[6][2].cost = -5
-    board_env[6][2].allowed = False
-    board_env[6][5].cost = -5
-    board_env[6][5].allowed = False
-    board_env[7][5].cost = -5
-    board_env[7][5].allowed = False
-    board_env[6][1].obstacle = 'J'
-    board_env[6][2].obstacle = 'J'
-    board_env[6][5].obstacle = 'J'
-    board_env[7][5].obstacle = 'J'
-    #water
-    board_env[0][4].cost = -5
-    board_env[0][4].allowed = False
-    board_env[0][5].cost = -5
-    board_env[0][5].allowed = False
-    board_env[3][0].cost = -5
-    board_env[3][0].allowed = False
-    board_env[3][1].cost = -5
-    board_env[3][1].allowed = False
-    board_env[0][4].obstacle = 'W'
-    board_env[0][5].obstacle = 'W'
-    board_env[3][0].obstacle = 'W'
-    board_env[3][1].obstacle = 'W'
-    #mountains
-    board_env[1][5].cost = 3
-    board_env[1][5].allowed = False
-    board_env[1][6].cost = 3
-    board_env[1][6].allowed = False
-    board_env[1][5].obstacle = 'M'
-    board_env[1][6].obstacle = 'M'
+    for obstactle in obstactles:
+        for i in obstactle[1]:
+            board_env[i[0]][i[1]].cost = obstactle[3]
+            board_env[i[0]][i[1]].allowed = obstactle[2]
+            board_env[i[0]][i[1]].obstacle = obstactle[0]
 
     row_val = 0
     col_val = 0
@@ -245,7 +193,14 @@ def a_star(game_board, inital_position, goal_state):
 knight_position = (0,0)
 queen_position = (7,6)
 
-board_env = board([8,8], queen_position)
+obstactles = [("wild animals", [(1,1), (1,2), (4,6), (4,7)], False, 5),
+              ("fire", [(2,3), (2,4), (4,1)], False, 5),
+              ("forrest", [(6,1), (6,2), (6,5), (7,5)], False, -5),
+              ("water", [(0,4), (0,5), (3,0), (3,1)], False, -5),
+              ("mountains", [(1,5), (1,6)], False, 3),
+              ]
+
+board_env = board([8,8], queen_position, obstactles)
 
 board_env[knight_position[0]][knight_position[1]].obstacle='K'
 board_env[queen_position[0]][queen_position[1]].obstacle='Q'
@@ -265,20 +220,12 @@ for i in board_env:
 
 path = a_star(board_env, knight_position, queen_position)
 print(path)
+total_cost = 0
+for i in path:
+    total_cost += i[1]
+print(total_cost)
 
-'''explore_list = Queue()
 
-
-explore_list.push(board_env[0][0])
-explore_list.push(board_env[0][1])
-explore_list.push(board_env[7][6])
-
-element = explore_list.pop()
-print(element.h_value)
-print(explore_list.top)
-element = explore_list.pop()
-print(element.h_value)
-print(explore_list.top)'''
 
 
 
