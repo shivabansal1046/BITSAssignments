@@ -8,7 +8,7 @@ class BlockState:
         self.allowed = True # Is it allowed to visit
         self.root_path = None #path initial state/root which keeps on updated as agent visits the cell
         self.position = position ## position of cell on game board
-        self.pushed = False # If already pushed in to be explore list. As one cell can have many parent cells
+        self.explored = False # If already explored in to be explore list. As one cell can have many parent cells
 
 ''' Queue class is priority queue which holds blocks/cell to be explored.
 Takes size of the queue and queue type. Stack and priority queues are supported'''
@@ -20,7 +20,7 @@ class Queue:
         self.top = 0
         self.bottom = 0
         self.length = length
-    ''' pushes the node/cell to queue'''
+    ''' pushes the node/cell to queue it takes contant time as it simply puts element at the top of the queue'''
     def push(self, node):
         if self.length - self.bottom + self.top % self.length == self.length -1:
             print("queue full")
@@ -28,7 +28,7 @@ class Queue:
         self.top += 1
         self.explore_list.append(node)
     ''' Return element which has minimum cost i.e. f value
-    fvalue = hvalue + gvalue'''
+    fvalue = hvalue + gvalue. It run with O(n) of complexity as it find value with minimum f value'''
     def pop(self):
         node = None
 
@@ -57,7 +57,8 @@ class Queue:
         return node
 
 ''' This functions estimates the Heuristic value for each cell state
-It estimates heuristic value using manhattan distance '''
+It estimates heuristic value using manhattan distance. This function at the cost O(m*n) 
+where m and n are rows and columns of the game board respectively'''
 def h_func(game_board, goal_state):
     row_val = 0
     col_val = 0
@@ -73,7 +74,10 @@ def h_func(game_board, goal_state):
 '''Defines game board configuration expects 
 size as [rows, cols], 
 obstacles i.e. [("obstacle type", [cell positions], "allowed to be visited", cost)]
-Example ("wild animals", [(1,1), (1,2), (4,6), (4,7)], False, 5)'''
+Example ("wild animals", [(1,1), (1,2), (4,6), (4,7)], False, 5)
+This function runs at the worst cost of O(m*n)
+where m and n are rows and columns of the game board respectively'''
+
 def board(size: [], obstacles):
 
     board_env = [[BlockState(0,(0,0)) for j in range(size[1])] for i in range(size[0])]
@@ -115,9 +119,10 @@ def board(size: [], obstacles):
 
     return board_env
 
-'''finds cells which are allowed to be vistied by the agent
- from current position'''
-def find_children(game_board, position):
+'''finds cells/frontiers which are allowed to be vistied by the agent
+ from current position. This function runs at the constant cost of O(4) 
+ as maximum allowed moves are 4'''
+def find_path(game_board, position):
 
     childerns = []
     if position[0] + 1 < 8 and game_board[position[0]+1][position[1]].allowed is True:
@@ -134,10 +139,13 @@ def find_children(game_board, position):
 
 ''' A* inform search algorithm implementation to
 find optimal path from initial state to goal state.
-Expects board configuration, initial state and goal state'''
+Expects board configuration, initial state and goal state. Time complexity of this algorithm if O(b^d)
+where b is average branching factor which is 2.5 and d is the depth of optimal solution'''
 def a_star(game_board, inital_position, goal_state):
 
     path = ""
+    iterations = 0
+    frontiers = 0
     explore_list = Queue(list_type="priority_queue")
     explored_list = []
 
@@ -146,8 +154,8 @@ def a_star(game_board, inital_position, goal_state):
         return path
 
     explored_list.append((inital_position, path))
-    children = find_children(game_board, inital_position)
-
+    children = find_path(game_board, inital_position)
+    frontiers += len(children)
     for child in children:
         if child != inital_position:
             game_board[child[0]][child[1]].g_value = game_board[inital_position[0]][inital_position[1]].cost + game_board[child[0]][child[1]].cost
@@ -157,7 +165,7 @@ def a_star(game_board, inital_position, goal_state):
     node = (game_board[inital_position[0]][inital_position[1]],path)
 
     while explore_list.top != explore_list.bottom:
-
+        iterations += 1
         node = explore_list.pop()
 
         path_reset = True
@@ -182,14 +190,17 @@ def a_star(game_board, inital_position, goal_state):
             explored_list.append((node[0].position, path))
 
             path = path + " -> " + str(node[0].position) + "|" + str(node[0].cost)
-            children = find_children(game_board, node[0].position)
-
+            children = find_path(game_board, node[0].position)
+            frontiers += len(children)
             for child in children:
                 game_board[child[0]][child[1]].g_value = game_board[child[0]][child[1]].cost + node[0].g_value
-                if child != inital_position and game_board[child[0]][child[1]].pushed == False:
+                if child != inital_position and game_board[child[0]][child[1]].explored == False:
                     game_board[child[0]][child[1]].root_path = path
                     explore_list.push((game_board[child[0]][child[1]], path))
-                    game_board[child[0]][child[1]].pushed = True
+                    game_board[child[0]][child[1]].explored = True
+    print("\nNumber of cells explored to find out optimal path: {0}".format(iterations))
+    print("Average branching factor (b): {0}".format(frontiers/iterations))
+    print("depth of the optimal path (d): {0}".format(len(path.split(" -> ")) - 1))
     return path
 
 ''' main code execution starts form here
@@ -230,14 +241,19 @@ print("cost, obstacle, h_value, actions, position")
 for i in board_env:
     for j in i:
         if j.cost < 0 and j.h_value>9:
-            print(" {0}/{1}/{2}/{3}/{4} ".format(j.allowed, j.cost, j.obstacle or " ", j.h_value,  j.position), end = "|")
+            print(" {0}/{1}/{2}/{3}/{4} ".format(str(j.allowed)[0], j.cost, (j.obstacle or " ")[0], j.h_value,  j.position), end = "|")
         elif j.cost < 0:
-            print(" {0}/{1}/{2}/{3}/{4}  ".format(j.allowed, j.cost, j.obstacle or " ", j.h_value,  j.position), end = "|")
+            print(" {0}/{1}/{2}/{3}/{4}  ".format(str(j.allowed)[0], j.cost, (j.obstacle or " ")[0], j.h_value,  j.position), end = "|")
+        elif j.cost >= 0:
+            print(" {0}/ {1}/{2}/{3}/{4} ".format(str(j.allowed)[0], j.cost, (j.obstacle or " ")[0], j.h_value,  j.position), end = "|")
+        elif j.h_value >= 9:
+            print(" {0}/ {1}/{2}/{3}/{4} ".format(str(j.allowed)[0], j.cost, (j.obstacle or " ")[0], j.h_value,  j.position), end = "|")
         elif j.h_value>9:
-            print("  {0}/{1}/{2}/{3}/{4} ".format(j.allowed, j.cost, j.obstacle or " ", j.h_value,  j.position), end = "|")
+            print("  {0}/{1}/{2}/{3}/{4} ".format(str(j.allowed)[0], j.cost, (j.obstacle or " ")[0], j.h_value,  j.position), end = "|")
         else:
-            print("  {0}/{1}/{2}/{3}/{4}  ".format(j.allowed, j.cost, j.obstacle or " ", j.h_value,  j.position), end = "|")
+            print("  {0}/{1}/{2}/{3}/{4}   ".format(str(j.allowed)[0], j.cost, (j.obstacle or " ")[0], j.h_value,  j.position), end = "|")
     print("")
+
 
 ''' calculating optimal path from knight postion to queen position'''
 path = a_star(board_env, knight_position, queen_position)
@@ -252,7 +268,7 @@ for i in path.split(" -> "):
     total_cost += int(i.split("|")[1])
     steps += 1
 
-print("Number of steps needed: {0}".format(steps))
+print("Number of steps needed: {0}".format(steps-1))
 
 if total_cost < 0:
     print("Total reward: {0}".format(abs(total_cost)))
