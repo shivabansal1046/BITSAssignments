@@ -169,13 +169,6 @@ def a_star(game_board, inital_position, goal_state):
         node = explore_list.pop()
 
         path_reset = True
-        for child in children:
-
-            if node[0].position == child:
-                path_reset = False
-
-        if path_reset:
-            path = node[0].root_path
 
         explored_flag = False
         for val in explored_list:
@@ -183,6 +176,14 @@ def a_star(game_board, inital_position, goal_state):
                 explored_flag = True
 
         if not explored_flag:
+            for child in children:
+
+                if node[0].position == child:
+                    path_reset = False
+
+            if path_reset:
+                path = node[0].root_path
+
             if node[0].position == goal_state:
                 path = path + " -> " + str(node[0].position) + "|" + str(node[0].cost)
                 returned_path = path
@@ -193,7 +194,9 @@ def a_star(game_board, inital_position, goal_state):
             children = find_path(game_board, node[0].position)
             frontiers += len(children)
             for child in children:
+
                 game_board[child[0]][child[1]].g_value = game_board[child[0]][child[1]].cost + node[0].g_value
+
                 if child != inital_position and game_board[child[0]][child[1]].explored == False:
                     game_board[child[0]][child[1]].root_path = path
                     explore_list.push((game_board[child[0]][child[1]], path))
