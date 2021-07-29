@@ -313,11 +313,63 @@ print("Total {}: {}".format("reward" if (total_cost < 0) else "cost", abs(total_
 
 
 
+import ast
+def parse_path(path):
+    temp = path.split("|")
+    path_array = [ast.literal_eval(temp[0])]
+    for i in temp[1:-1]:
+        str_tuple = i.split("→")[1]
+        path_array.append(ast.literal_eval(str_tuple.strip()))
+    return path_array
+
+def print_layout(board):
+    n = 8
+    st = "   "
+    for i in range(n):
+        add = "  " if n%2==0 else ""
+        st = st + "          " + str(i) + add
+    print(st)   
+ 
+    for r in range(n):
+        st = "     "
+        if r == 0:
+            for col in range(n):
+                st = st + "______________" 
+            print(st)
+ 
+        st = "     "
+        for col in range(n):
+            st = st + "|            "
+        print(st + "|")
+         
+        st = "  " + str(r) + "  "
+        for col in range(n):
+            length = len(board[r][col].obstacle) if board[r][col].obstacle else 0
+            text = board[r][col].obstacle if board[r][col].obstacle else ""
+            l = int((12-length)/2)
+            ri = 11 - length - l
+            if ri==-1:
+                add = ""
+            else:
+                add = " "
+            st = st + "|" + " "*l+text + " "*ri+add
+        print(st + "|") 
+ 
+        st = "     "
+        for col in range(n):
+            st = st + "|____________"
+        print(st + '|')
+ 
+    print()
 
 
 
 
-
+path_array = parse_path(path)
+copy_board = board_env
+for row, column in path_array[1:-1]:
+    copy_board[row][column].obstacle = "#"
+print_layout(copy_board)
 
 
 
