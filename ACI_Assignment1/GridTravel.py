@@ -11,7 +11,7 @@
 #  | Shiva Bansal | 2020FC04280 | 
 #  | Ashish Kumar Singh | 2020FC04285 | 
 #  | Ashish Kumar Verma | 2020FC04142 | 
-#  | Ganesh Sastry | 2020FC04024 | 
+#  | Ganesh P S | 2020FC04024 | 
 #  | Deepam Patel | 2020FC04141 | 
 # 
 
@@ -29,11 +29,13 @@
 # 7.	The grid size is fixed to 8 by 8. If this needs to change, update variables board_xmax and board_ymax
 # 
 
-# In[19]:
+# #### Data structures
+
+# In[1]:
 
 
 # Defines each cell/ block state of the board
-class BlockState:
+class Cell:
     
     # Initializer function
     def __init__(self, h_value,  position):
@@ -63,10 +65,7 @@ class BlockState:
         return "{}".format(self.position)
 
 
-# Queue class is priority queue which holds blocks/cells to be explored.
-# Takes size of the queue and queue type. Stack and priority queues are supported
-
-# In[20]:
+# In[2]:
 
 
 # Queue class is priority queue which holds blocks/cells to be explored.
@@ -125,7 +124,9 @@ class Queue:
         return node
 
 
-# In[21]:
+# #### Heuristic function
+
+# In[3]:
 
 
 # Return Manhattan distance between two points
@@ -148,7 +149,9 @@ def h_func(game_board, goal_state):
     return game_board
 
 
-# In[22]:
+# #### Initializing the board environment
+
+# In[4]:
 
 
 # Defines game board configuration
@@ -161,7 +164,7 @@ def h_func(game_board, goal_state):
 def board(size: [], obstacles):
 
     # Initialize the board
-    board_env = [[BlockState(0, (i,j)) for j in range(size[1])] for i in range(size[0])]
+    board_env = [[Cell(0, (i,j)) for j in range(size[1])] for i in range(size[0])]
 
     for obstacle_name, obstacle_locations, obstacle_passthrough, obstacle_cost in obstacles:
         for x, y in obstacle_locations:
@@ -193,7 +196,9 @@ def board(size: [], obstacles):
     return board_env
 
 
-# In[23]:
+# #### Search algorithm and supporting functions
+
+# In[5]:
 
 
 # Finds cells/frontiers which are allowed to be vistied by the agent
@@ -214,7 +219,7 @@ def find_children(game_board, position):
     return children
 
 
-# In[24]:
+# In[6]:
 
 
 # A* inform search algorithm implementation to
@@ -282,13 +287,16 @@ def a_star(game_board, inital_position, goal_state):
                     explore_list.push((game_board[child[0]][child[1]], path))
                     game_board[child[0]][child[1]].explored = True
 
-    print("\nNumber of cells explored to find out optimal path: {0}".format(iterations))
+    print("\nCode complexity:")
+    print("Number of cells explored to find out optimal path: {0}".format(iterations))
     print("Average branching factor (b): {0}".format(frontiers/iterations))
     print("depth of the optimal path (d): {0}".format(len(path.split(separator)) - 1))
     return path
 
 
-# In[25]:
+# #### Validation
+
+# In[7]:
 
 
 # Read position and check if it is within the board, and is not one of the obstacles
@@ -316,7 +324,9 @@ def get_input(pawn_type, default):
     return point
 
 
-# In[26]:
+# #### Board display functions
+
+# In[8]:
 
 
 # Function to return direction arrows based on previous and current positions
@@ -342,19 +352,21 @@ def get_direction(prev_x, prev_y, x, y):
     return direction
 
 
-# In[27]:
+# In[14]:
 
 
 import ast
 def parse_path(path):
     temp = path.split("|")
-    path_array = [ast.literal_eval(temp[0])]
+    #path_array = [ast.literal_eval(temp[0])]
+    path_array = [eval(temp[0])]
     for i in temp[1:-1]:
         str_tuple = i.split("→")[1]
         path_array.append(ast.literal_eval(str_tuple.strip()))
     return path_array
 
 def print_layout(board):
+    print()
     n = board_xmax
     st = "   "
     for i in range(n):
@@ -395,10 +407,15 @@ def print_layout(board):
     print()
 
 
-# In[28]:
+# #### Main function
+# (Restart from this point for a new run)
+
+# In[15]:
 
 
-# main code execution starts form here
+### Main code execution starts form here
+
+# Program constants and inputs
 
 # initializing the knight and queen position
 knight_position = (0,0)
@@ -436,12 +453,12 @@ knight_position = get_input("Knight", knight_position)
 # Get Queen position, or default
 queen_position = get_input("Queen", queen_position)
 
+
+# In[16]:
+
+
 # board configuration
 board_env = board([board_xmax,board_ymax], obstacles)
-
-
-# In[30]:
-
 
 # Heuristic estimation for given board configuration
 
@@ -449,27 +466,17 @@ board_env = h_func(board_env, queen_position)
 board_env[knight_position[0]][knight_position[1]].obstacle='K'
 board_env[queen_position[0]][queen_position[1]].obstacle='Q'
 
-# Print board configuration as matrix of given size - COMMENTED TO BE REMOVED
-"""print("allowed, cost, obstacle, h_value, position")
-for i in board_env:
-    for j in i:
-        # Print everything...
-        #print(" {}|{: >3}|{}|{: >3}|{} ".format(str(j.allowed)[0], j.cost, (j.obstacle or " ")[0], j.h_value,  j.position), end = "||")
+print("Board initial layout:")
+print_layout(board_env)
 
-        # ... or print only position, cost and obstacle?
-        print(" {}|{: >3} {: <7} ".format(j.position, j.cost, (j.obstacle or " ")[:7]), end = "||")
 
-    print("")
-"""
-copy_board = board_env
+# In[17]:
 
-#print("Board initial layout:")
-#print_layout(board_env)
 
-''' calculating optimal path from knight postion to queen position'''
+# calculating optimal path from knight postion to queen position
 path = a_star(board_env, knight_position, queen_position)
 
-print("\noptimal path for knight to reach queen:")
+print("\nOptimal path for knight to reach queen:")
 print(path)
 
 path_array = parse_path(path)
@@ -477,13 +484,18 @@ path_array = parse_path(path)
 prev_row = knight_position[0]
 prev_col = knight_position[1]
 for row, column in path_array[1:-1]:
-    copy_board[row][column].obstacle = get_direction(prev_row, prev_col, row, column)
+    board_env[row][column].obstacle = get_direction(prev_row, prev_col, row, column)
     prev_row = row
     prev_col = column
 
-print_layout(copy_board)
+print_layout(board_env)
 
-''' cost calculation'''
+
+# #### Cost calculation
+
+# In[19]:
+
+
 total_cost = 0
 steps = 0
 for i in path.split(separator):
