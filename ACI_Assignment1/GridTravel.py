@@ -224,8 +224,9 @@ def find_children(game_board, position):
 
 # A* inform search algorithm implementation to
 # find optimal path from initial state to goal state.
-# Expects board configuration, initial state and goal state. Time complexity of this algorithm if O(b^d)
-# where b is average branching factor which is 2.5 and d is the depth of optimal solution
+# Expects board configuration, initial state and goal state. Time complexity of this algorithm if O(b^△h)
+# where b is average branching factor which is 2.5 and △h is difference between actual path and optimal solution i.e. 28-13=15
+#for initial position (0,0) and goal position (7,6)
 def a_star(game_board, inital_position, goal_state):
 
     path = ""
