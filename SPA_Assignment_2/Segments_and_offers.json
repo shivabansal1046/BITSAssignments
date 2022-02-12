@@ -1,0 +1,5 @@
+{"segment" : 0, "Cluster description" : "Low income, low spend score, age range is 45 - 60" , "label" : "conservative family", "offer" : "O1" }
+{"segment" : 1, "Cluster description" : "High income, high spend, age range is 25 to 40" , "label" : "High spend niche customers", "offer" : "O2" }
+{"segment" : 2, "Cluster description" : "High income, Low spend, age 30 to 45" , "label" : "Economical family customers", "offer" : "O3" }
+{"segment" : 3, "Cluster description" : "Low income, high spend, age range 20 to 30" , "label" : "Fresher/ student", "offer" : "O4" }
+{"segment" : 4, "Cluster description" : "Medium income, medium spend, age range 25 to 50" , "label" : "Economical family", "offer" : "O5" }
